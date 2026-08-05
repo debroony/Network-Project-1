@@ -10,16 +10,16 @@ public class QueueClient {
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             Scanner scanner = new Scanner(System.in);
             
-            System.out.print("พิมพ์คำสั่งขอคิว (เช่น GET_Q 2): ");
+            System.out.print("Enter command (e.g., GET_Q or CHECK_Q): ");
             String command = scanner.nextLine();
             
             out.println(command); 
             
             String response = in.readLine(); 
-            System.out.println("[CLIENT] ได้รับข้อความ: " + response);
+            System.out.println("[CLIENT] Received response: " + response);
             
         } catch (IOException e) {
-            System.out.println("ไม่สามารถเชื่อมต่อ Server ได้ (เปิด Server หรือยัง?)");
+            System.out.println("Cannot connect to Server (Is Server running?)");
         }
     }
 }
