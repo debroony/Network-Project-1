@@ -2,8 +2,8 @@ import java.io.*;
 import java.net.*;
 
 public class QueueServer {
+    private static int currentQueue = 0;
     public static void main(String[] args) {
-        int currentQueue = 0;
 
         try (ServerSocket serverSocket = new ServerSocket(8888)) {
             System.out.println("[Server] Queue System is running on Port 8888");
@@ -12,6 +12,23 @@ public class QueueServer {
                 Socket socket = serverSocket.accept();
                 System.out.println("[Server] Client connected.");
 
+                ClientHandler handler = new ClientHandler(socket);
+                handler.start();
+            }
+        
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    } 
+
+    private static class ClientHandler extends Thread {
+            private Socket socket;
+
+            public ClientHandler(Socket socket) {
+                this.socket = socket;
+            }
+            public void run() {
+                try { 
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
@@ -22,9 +39,11 @@ public class QueueServer {
                     out.println("400 BAD REQUEST - Request is empty");
                 } 
                 else if (request.equalsIgnoreCase("GET_Q")) {
-                    currentQueue++;
-                    String formattedQueue = String.format("%03d", currentQueue);
-                    out.println("201 CREATED - Your queue number is Q-" + formattedQueue);
+                    synchronized (QueueServer.class) {
+                        currentQueue++;
+                        String formattedQueue = String.format("%03d", currentQueue);
+                        out.println("201 CREATED - Your queue number is Q-" + formattedQueue);
+                    }
                 } 
                 else if (request.equalsIgnoreCase("CHECK_Q")) {
                     String formattedQueue = String.format("%03d", currentQueue);
@@ -35,10 +54,10 @@ public class QueueServer {
                 }
 
                 socket.close();
+                
+            } catch (IOException e) {
+                System.out.println("[Server-Thread] Connection Error");
             }
-        
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-    } 
+    }
 }
